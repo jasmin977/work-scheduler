@@ -1,0 +1,959 @@
+/* ============================================================
+   Employee Weekly Schedule Visualizer
+   ============================================================ */
+
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --ink: #1e293b;
+  --ink-soft: #64748b;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --accent: #4f46e5;
+  --accent-soft: #eef2ff;
+  --danger: #e11d48;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 4px 14px rgba(15, 23, 42, .05);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.app {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 16px 20px 60px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+code {
+  background: var(--accent-soft);
+  border: 1px solid #dfe4ff;
+  border-radius: 5px;
+  padding: 0 5px;
+  font-size: 12px;
+}
+
+/* ============ Toolbar ============ */
+
+.toolbar {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  position: sticky;
+  top: 8px;
+  z-index: 30;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.brand-mark {
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.business-input {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 15px;
+  font-weight: 600;
+  width: 250px;
+  background: transparent;
+  transition: border-color .15s, background .15s;
+}
+
+.business-input:hover {
+  background: var(--bg);
+}
+
+.business-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+}
+
+.store-ctl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-soft);
+}
+
+.store-ctl label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.store-ctl select {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 5px 8px;
+  background: #fff;
+  font-weight: 600;
+  max-width: 190px;
+}
+
+.store-ctl select:focus {
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--ink-soft);
+}
+
+.icon-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.icon-btn:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.icon-btn:disabled:hover {
+  border-color: var(--line-strong);
+  color: var(--ink-soft);
+}
+
+.range-ctl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-soft);
+}
+
+.range-ctl label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.range-ctl select {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 4px 6px;
+  background: #fff;
+}
+
+.toolbar-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.primary-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 8px 16px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, .4);
+}
+
+.primary-btn:hover {
+  background: #4338ca;
+}
+
+.secondary-btn {
+  background: #fff;
+  color: var(--accent);
+  border: 1px solid #c7cdf7;
+  border-radius: 9px;
+  padding: 8px 14px;
+  font-weight: 600;
+}
+
+.secondary-btn:hover {
+  background: var(--accent-soft);
+}
+
+.ghost-btn {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 13px;
+}
+
+.ghost-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ============ Input grid ============ */
+
+.grid-section {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px 16px;
+  margin-bottom: 22px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.section-head h2 {
+  font-size: 15px;
+  letter-spacing: .01em;
+}
+
+.hint {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}
+
+.grid-scroll {
+  overflow-x: auto;
+}
+
+.input-grid {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: 860px;
+}
+
+.input-grid th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--ink-soft);
+  font-weight: 600;
+  padding: 6px 4px;
+  text-align: left;
+  border-bottom: 2px solid var(--line);
+  white-space: nowrap;
+}
+
+.input-grid th.day-col {
+  position: relative;
+}
+
+.input-grid .col-menu-btn {
+  border: none;
+  background: transparent;
+  color: var(--line-strong);
+  font-size: 14px;
+  padding: 0 3px;
+  border-radius: 5px;
+  vertical-align: middle;
+}
+
+.input-grid .col-menu-btn:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.input-grid td {
+  border-bottom: 1px solid var(--line);
+  padding: 3px 3px;
+}
+
+.input-grid th:first-child,
+.input-grid td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--card);
+  z-index: 2;
+  min-width: 168px;
+  max-width: 220px;
+}
+
+.emp-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--line-strong);
+  font-size: 14px;
+  user-select: none;
+  padding: 2px;
+}
+
+.drag-handle:hover {
+  color: var(--accent);
+}
+
+tr.dragging {
+  opacity: .4;
+}
+
+tr.drag-over td {
+  border-top: 2px solid var(--accent);
+}
+
+.emp-name {
+  font-weight: 600;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emp-name-input {
+  font-weight: 600;
+  font-size: inherit;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 3px 5px;
+  background: transparent;
+  text-overflow: ellipsis;
+  transition: border-color .12s, background .12s;
+}
+
+.emp-name-input:hover {
+  background: var(--bg);
+}
+
+.emp-name-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.emp-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.row-btn {
+  border: none;
+  background: transparent;
+  color: var(--line-strong);
+  font-size: 15px;
+  border-radius: 5px;
+  padding: 1px 5px;
+}
+
+.row-btn:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.row-btn.del:hover {
+  color: var(--danger);
+  background: #fff1f2;
+}
+
+.cell-input {
+  width: 100%;
+  min-width: 84px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 6px 8px;
+  background: transparent;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  transition: border-color .12s, background .12s;
+}
+
+.cell-input:hover {
+  background: var(--bg);
+}
+
+.cell-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.cell-input.invalid {
+  border-color: var(--danger);
+  background: #fff1f2;
+}
+
+.cell-input.is-off {
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-size: 12px;
+}
+
+.add-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.add-form input {
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  padding: 7px 10px;
+  width: 240px;
+}
+
+.add-form input:focus {
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* ============ Schedule header ============ */
+
+.schedule-header {
+  text-align: center;
+  margin: 8px 0 18px;
+}
+
+.schedule-header h1 {
+  font-size: 22px;
+  letter-spacing: .01em;
+}
+
+.schedule-header h1:empty {
+  display: none;
+}
+
+.schedule-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+.focus-bar {
+  margin-bottom: 10px;
+}
+
+/* ============ Day cards / timetable ============ */
+
+.day-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px 14px;
+  margin-bottom: 16px;
+}
+
+.day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.day-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.day-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+
+.day-actions button {
+  border: none;
+  background: transparent;
+  color: var(--line-strong);
+  font-size: 15px;
+  border-radius: 6px;
+  padding: 2px 7px;
+}
+
+.day-actions button:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.tt-scroll {
+  overflow-x: auto;
+}
+
+.timetable {
+  min-width: 820px;
+}
+
+.tt-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.tt-name {
+  flex: none;
+  width: 150px;
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--card);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px 0 2px;
+  font-weight: 600;
+  font-size: 13.5px;
+  border-right: 1px solid var(--line-strong);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tt-name .emp-dot {
+  flex: none;
+}
+
+.tt-track {
+  flex: 1;
+  position: relative;
+  height: 40px;
+  border-bottom: 1px solid var(--line);
+  /* hour gridlines painted via inline background-size set from JS */
+  background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
+}
+
+.tt-row:last-child .tt-track {
+  border-bottom: none;
+}
+
+/* hour axis */
+.tt-axis .tt-track {
+  height: 26px;
+  border-bottom: 2px solid var(--line-strong);
+  background-image: none;
+  display: flex;
+}
+
+.tt-axis .tt-name {
+  border-right-color: transparent;
+}
+
+.axis-cell {
+  flex: 1;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  border-left: 1px solid var(--line);
+  padding: 5px 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* shift blocks */
+.block {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 4px;
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55);
+}
+
+/* off row */
+.off-band {
+  position: absolute;
+  inset: 6px 4px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  color: #94a3b8;
+  background: repeating-linear-gradient(-45deg, #f8fafc 0 8px, #f1f5f9 8px 16px);
+  border: 1px dashed var(--line-strong);
+}
+
+/* staffing strip */
+.staffing {
+  margin-top: 2px;
+}
+
+.staffing .tt-track {
+  height: 22px;
+  border-bottom: none;
+  background-image: none;
+  display: flex;
+}
+
+.staffing .tt-name {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  border-right-color: transparent;
+}
+
+.staff-cell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-left: 1px solid var(--line);
+  color: #475569;
+}
+
+.staff-cell.s0 {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.staff-cell.s-low {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.staff-cell.s-mid {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.staff-cell.s-high {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+/* ============ Summary ============ */
+
+.summary-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px 16px;
+}
+
+.summary-card h3 {
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.summary-chips {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.chip {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.chip b {
+  color: var(--ink);
+  font-size: 15px;
+  margin-right: 4px;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.summary-table th {
+  text-align: left;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--ink-soft);
+  padding: 6px 8px;
+  border-bottom: 2px solid var(--line);
+}
+
+.summary-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-table tr:last-child td {
+  border-bottom: none;
+}
+
+.summary-table .emp-cell {
+  gap: 8px;
+}
+
+/* ============ Context menu ============ */
+
+.pop-menu {
+  position: fixed;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, .16);
+  padding: 5px;
+  min-width: 190px;
+}
+
+.pop-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.pop-menu button:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pop-menu button.danger:hover {
+  background: #fff1f2;
+  color: var(--danger);
+}
+
+.pop-menu .menu-sep {
+  height: 1px;
+  background: var(--line);
+  margin: 4px 6px;
+}
+
+.pop-menu .menu-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--ink-soft);
+  padding: 6px 10px 2px;
+}
+
+/* ============ Mobile day nav ============ */
+
+.day-nav {
+  display: none;
+  gap: 4px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+
+.day-nav button {
+  flex: 1;
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.day-nav button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+@media (max-width: 760px) {
+  .app {
+    padding: 10px 10px 40px;
+  }
+
+  .toolbar {
+    position: static;
+  }
+
+  .toolbar-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .toolbar-actions button {
+    flex: 1;
+  }
+
+  .day-nav {
+    display: flex;
+  }
+
+  body.mobile .day-card {
+    display: none;
+  }
+
+  body.mobile .day-card.mobile-active {
+    display: block;
+  }
+
+  .tt-name {
+    width: 108px;
+    font-size: 12px;
+  }
+}
+
+/* ============ Focus (single-day) mode ============ */
+
+body.focus-mode .day-card {
+  display: none;
+}
+
+body.focus-mode .day-card.focused {
+  display: block;
+}
+
+body.focus-mode .day-card.focused .tt-track {
+  height: 58px;
+}
+
+body.focus-mode .day-card.focused .block {
+  font-size: 13px;
+}
+
+body.focus-mode .day-card.focused .tt-name {
+  font-size: 15px;
+}
+
+body.focus-mode .summary-card {
+  display: none;
+}
+
+/* ============ Print ============ */
+
+@media print {
+  /* no `size` here on purpose: declaring it locks the orientation
+     choice in the browser's print dialog.
+     margin: 0 also removes the browser's printed header/footer
+     (URL, date, page numbers). */
+  @page {
+    margin: 0;
+  }
+
+  body {
+    background: #fff;
+    font-size: 12px;
+  }
+
+  .app {
+    max-width: none;
+    padding: 4mm; /* tiny inset so cards aren't glued to the paper edge */
+  }
+
+  .no-print,
+  .day-actions,
+  .focus-bar,
+  .summary-card {
+    display: none !important;
+  }
+
+  body.focus-mode .day-card,
+  body.mobile .day-card {
+    display: block !important;
+  }
+
+  .day-card {
+    box-shadow: none;
+    border: 1px solid var(--line-strong);
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 10px;
+    padding: 8px 10px 10px;
+  }
+
+  .tt-scroll {
+    overflow: visible;
+  }
+
+  .timetable {
+    min-width: 0;
+  }
+
+  .tt-track {
+    height: 30px;
+  }
+
+  .tt-name {
+    width: 120px;
+    position: static;
+  }
+
+  .schedule-header {
+    margin: 0 0 12px;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

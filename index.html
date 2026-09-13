@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Planning semaine 🎈</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- ======================= TOOLBAR ======================= -->
+      <header class="toolbar no-print">
+        <div class="toolbar-row">
+          <div class="brand">
+            <span class="brand-mark">▦</span>
+            <input
+              id="businessName"
+              class="business-input"
+              type="text"
+              placeholder="Nom du commerce / magasin"
+              spellcheck="false"
+            />
+          </div>
+
+          <div class="store-ctl">
+            <label for="storeSelect">Commerce</label>
+            <select id="storeSelect" title="Changer de commerce"></select>
+            <button
+              id="storeMenu"
+              type="button"
+              class="icon-btn"
+              title="Actions du commerce"
+            >
+              ⋯
+            </button>
+          </div>
+
+          <div class="range-ctl">
+            <label>Grille</label>
+            <select id="gridStart"></select>
+            <span>→</span>
+            <select id="gridEnd"></select>
+          </div>
+
+          <div class="toolbar-actions">
+            <button id="printBtn" class="primary-btn">
+              🖨 Imprimer le planning
+            </button>
+            <button id="downloadBtn" class="secondary-btn">
+              ⬇ Télécharger en image
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- ======================= INPUT GRID ======================= -->
+      <section class="grid-section no-print">
+        <div class="section-head">
+          <h2>Saisie du planning</h2>
+          <span class="hint"
+            >Tapez <code>7-5</code>, <code>7-1 5-9</code>,
+            <code>7:30-12:30</code> ou <code>OFF</code> — le planning se met à
+            jour pendant la saisie. Naviguez avec les flèches ← ↑ ↓ →. Glissez ⠿
+            pour réorganiser.</span
+          >
+        </div>
+
+        <div class="grid-scroll">
+          <table class="input-grid" id="inputGrid">
+            <thead>
+              <tr id="gridHead"></tr>
+            </thead>
+            <tbody id="gridBody"></tbody>
+          </table>
+        </div>
+
+        <form id="addForm" class="add-form">
+          <input
+            id="newEmployee"
+            type="text"
+            placeholder="Nom de l'employé"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="submit" class="secondary-btn">+ Ajouter</button>
+        </form>
+      </section>
+
+      <!-- ======================= MOBILE DAY NAV ======================= -->
+      <nav class="day-nav no-print" id="dayNav"></nav>
+
+      <!-- ======================= VISUAL SCHEDULE ======================= -->
+      <section id="scheduleArea">
+        <div class="schedule-header">
+          <h1 id="printBusiness"></h1>
+          <div class="schedule-title">PLANNING DE LA SEMAINE</div>
+        </div>
+
+        <div id="focusBar" class="focus-bar no-print" hidden>
+          <button id="exitFocus" class="ghost-btn">
+            ← Retour à la semaine complète
+          </button>
+        </div>
+
+        <div id="days"></div>
+
+        <!-- ======================= WEEKLY SUMMARY ======================= -->
+        <div class="summary-card" id="summaryCard">
+          <h3>Récapitulatif hebdomadaire</h3>
+          <div class="summary-chips" id="summaryChips"></div>
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Employé</th>
+                <th>Heures</th>
+                <th>Jours travaillés</th>
+                <th>Jours OFF</th>
+              </tr>
+            </thead>
+            <tbody id="summaryBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- floating context menu -->
+    <div id="popMenu" class="pop-menu" hidden></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
