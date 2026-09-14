@@ -24,6 +24,17 @@ Ouvrez [index.html](index.html) dans un navigateur moderne. Aucun build, aucun s
 3. **Imprimer** — le bouton 🖨 produit une mise en page propre : sans contrôles, pleine largeur, nom du commerce, les sept jours, sauts de page entre les jours. L'orientation (portrait ou paysage) se choisit librement dans la boîte de dialogue d'impression — le paysage reste conseillé pour une grille horaire plus lisible.
 4. **Télécharger en image** — un moteur de rendu canvas intégré (aucune bibliothèque externe, fonctionne hors ligne) génère un PNG haute résolution (2×) de la semaine complète, avec le nom du commerce en en-tête. Chaque jour peut aussi être téléchargé séparément depuis son menu `⋯`.
 
+## Édition directe sur le planning
+
+Les blocs du planning visuel sont éditables à la souris (ou au doigt), avec un magnétisme de 30 minutes :
+
+- **Glisser un bord** d'un bloc : étendre ou réduire le service jusqu'à l'heure voulue.
+- **Glisser le milieu** d'un bloc : déplacer tout le service en conservant sa durée.
+- **Cliquer sur un espace vide** de la ligne : ajouter 1 heure de travail à cet endroit ; **cliquer-glisser** dessine directement la plage voulue.
+- **Supprimer un service** : clic droit sur le bloc puis « Supprimer ce service », ou faites-le glisser verticalement hors de sa ligne (il devient grisé) puis relâchez.
+- **Fusion automatique** : quand deux blocs se rejoignent ou se chevauchent (déplacement, redimensionnement ou création par-dessus), ils fusionnent en un seul service au relâchement.
+- Chaque modification est réécrite dans la cellule de saisie (ex. `7:30-12:30 17-21`) — grille, récapitulatif et effectif restent synchronisés.
+
 ## Plusieurs commerces
 
 Le sélecteur **Commerce** dans la barre d'outils permet de gérer plusieurs plannings indépendants :

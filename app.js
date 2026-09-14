@@ -7,7 +7,15 @@
 
 /* ---------------- constants ---------------- */
 
-const DAY_NAMES = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+const DAY_NAMES = [
+  "Lundi",
+  "Mardi",
+  "Mercredi",
+  "Jeudi",
+  "Vendredi",
+  "Samedi",
+  "Dimanche",
+];
 const DAY_SHORT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 const PALETTE = [
@@ -27,21 +35,35 @@ const STORAGE_KEY = "ews:v1";
 
 /* ---------------- state ---------------- */
 
-let root = null;          // { currentStoreId, nextStoreId, stores: { id: store } }
-let state = null;         // the currently selected store (points into root.stores)
-let uiDay = 0;            // mobile: which day is shown
-let focusedDay = null;    // focus mode: which day, or null
-let copiedRow = null;     // [7 strings] clipboard for "copy employee schedule"
+let root = null; // { currentStoreId, nextStoreId, stores: { id: store } }
+let state = null; // the currently selected store (points into root.stores)
+let uiDay = 0; // mobile: which day is shown
+let focusedDay = null; // focus mode: which day, or null
+let copiedRow = null; // [7 strings] clipboard for "copy employee schedule"
 
 function sampleStore() {
-  const employees = ["Empl-1", "Empl-2", "Empl-3", "Empl-4", "Empl-5", "Empl-6"]
-    .map((name, i) => ({ id: "e" + (i + 1), name, color: i % PALETTE.length }));
+  const employees = [
+    "Empl-1",
+    "Empl-2",
+    "Empl-3",
+    "Empl-4",
+    "Empl-5",
+    "Empl-6",
+  ].map((name, i) => ({ id: "e" + (i + 1), name, color: i % PALETTE.length }));
   const sample = {
     e1: ["7-5", "7-1 5-9", "OFF", "8-4", "7-5", "7-1 5-9", "OFF"],
     e2: ["8-4", "8-4", "7-3", "OFF", "7-1 5-9", "8-4", "8-12"],
     e3: ["OFF", "9-5", "9-5", "9-5", "OFF", "9-5", "12-8"],
     e4: ["12-8", "OFF", "1-9", "1-9", "12-8", "OFF", "1-9"],
-    e5: ["7:30-12:30", "7:30-12:30", "OFF", "7:30-3:30", "7:30-12:30", "2-10", "OFF"],
+    e5: [
+      "7:30-12:30",
+      "7:30-12:30",
+      "OFF",
+      "7:30-3:30",
+      "7:30-12:30",
+      "2-10",
+      "OFF",
+    ],
     e6: ["2-10", "2-10", "2-10", "OFF", "2-10", "OFF", "8-4"],
   };
   return {
@@ -85,22 +107,37 @@ function load() {
       if (data.stores) {
         root = data;
       } else if (data.employees) {
-        root = { currentStoreId: "s1", nextStoreId: 2, stores: { s1: migrateStore(data) } };
+        root = {
+          currentStoreId: "s1",
+          nextStoreId: 2,
+          stores: { s1: migrateStore(data) },
+        };
       } else {
         throw new Error("bad state");
       }
-      if (!root.stores[root.currentStoreId]) root.currentStoreId = Object.keys(root.stores)[0];
+      if (!root.stores[root.currentStoreId])
+        root.currentStoreId = Object.keys(root.stores)[0];
       state = root.stores[root.currentStoreId];
       if (!state) throw new Error("no store");
       return;
     }
-  } catch (e) { /* fall through to defaults */ }
-  root = { currentStoreId: "s1", nextStoreId: 2, stores: { s1: sampleStore() } };
+  } catch (e) {
+    /* fall through to defaults */
+  }
+  root = {
+    currentStoreId: "s1",
+    nextStoreId: 2,
+    stores: { s1: sampleStore() },
+  };
   state = root.stores.s1;
 }
 
 function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(root)); } catch (e) { /* storage full/blocked */ }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(root));
+  } catch (e) {
+    /* storage full/blocked */
+  }
 }
 
 /* ---------------- stores ---------------- */
@@ -109,7 +146,14 @@ function renderStoreSelect() {
   const sel = $("#storeSelect");
   sel.innerHTML = "";
   for (const [id, st] of Object.entries(root.stores)) {
-    sel.appendChild(new Option(st.business || "Sans nom", id, false, id === root.currentStoreId));
+    sel.appendChild(
+      new Option(
+        st.business || "Sans nom",
+        id,
+        false,
+        id === root.currentStoreId,
+      ),
+    );
   }
 }
 
@@ -120,7 +164,11 @@ function openStoreMenu(e) {
   ];
   if (Object.keys(root.stores).length > 1) {
     items.push("sep");
-    items.push({ label: "Supprimer ce commerce", danger: true, action: deleteStore });
+    items.push({
+      label: "Supprimer ce commerce",
+      danger: true,
+      action: deleteStore,
+    });
   }
   openMenu(e, items);
 }
@@ -191,10 +239,14 @@ function resolveTime(t, minAllowed) {
 function parseCell(text, gridStartMin) {
   const raw = (text || "").trim();
   if (!raw) return { off: false, shifts: [] };
-  if (/^(off|repos|congé|conge|rest|x|-)$/i.test(raw)) return { off: true, shifts: [] };
+  if (/^(off|repos|congé|conge|rest|x|-)$/i.test(raw))
+    return { off: true, shifts: [] };
 
   // normalize: unify dashes, strip spaces around them, then split shifts
-  const norm = raw.replace(/[–—]/g, "-").replace(/\s*-\s*/g, "-").replace(/\s*(to)\s*/gi, "-");
+  const norm = raw
+    .replace(/[–—]/g, "-")
+    .replace(/\s*-\s*/g, "-")
+    .replace(/\s*(to)\s*/gi, "-");
   const tokens = norm.split(/[\s,;+]+/).filter(Boolean);
   const shifts = [];
   let prevEnd = 0;
@@ -209,7 +261,8 @@ function parseCell(text, gridStartMin) {
     const start = resolveTime(t1, Math.max(gridStartMin, prevEnd));
     let end = resolveTime(t2, start + 1);
     if (end === 0) end = 1440; // "12am"/"24" as an end time means midnight
-    if (end <= start || end > 1440) return { off: false, shifts: [], invalid: true };
+    if (end <= start || end > 1440)
+      return { off: false, shifts: [], invalid: true };
     shifts.push({ start, end: Math.min(end, 1440) });
     prevEnd = end;
   }
@@ -225,16 +278,21 @@ function fmtHour(h) {
 }
 
 function fmtTime(min) {
-  const h = Math.floor(min / 60), m = min % 60;
+  const h = Math.floor(min / 60),
+    m = min % 60;
   return m === 0 ? `${h}h` : `${h}h${String(m).padStart(2, "0")}`;
 }
 
 function fmtHours(mins) {
   const h = mins / 60;
-  return (Number.isInteger(h) ? String(h) : h.toFixed(1).replace(".", ",")) + "h";
+  return (
+    (Number.isInteger(h) ? String(h) : h.toFixed(1).replace(".", ",")) + "h"
+  );
 }
 
-function empColor(emp) { return PALETTE[emp.color % PALETTE.length]; }
+function empColor(emp) {
+  return PALETTE[emp.color % PALETTE.length];
+}
 
 /* ---------------- DOM helpers ---------------- */
 
@@ -269,7 +327,9 @@ function renderGrid() {
 
   const body = $("#gridBody");
   body.innerHTML = "";
-  state.employees.forEach((emp, idx) => body.appendChild(buildGridRow(emp, idx)));
+  state.employees.forEach((emp, idx) =>
+    body.appendChild(buildGridRow(emp, idx)),
+  );
 }
 
 function buildGridRow(emp, idx) {
@@ -305,7 +365,10 @@ function buildGridRow(emp, idx) {
     if (!nameInput.value.trim()) nameInput.value = emp.name; // restore if left empty
   });
   nameInput.addEventListener("keydown", (ev) => {
-    if (ev.key === "Enter") { ev.preventDefault(); nameInput.blur(); }
+    if (ev.key === "Enter") {
+      ev.preventDefault();
+      nameInput.blur();
+    }
     ev.stopPropagation(); // don't let grid arrow-navigation steal caret keys
   });
   wrap.appendChild(nameInput);
@@ -369,8 +432,13 @@ function onCellInput(e) {
 function focusCell(empIdx, day) {
   const emp = state.employees[empIdx];
   if (!emp || day < 0 || day > 6) return false;
-  const target = document.querySelector(`.cell-input[data-emp-id="${emp.id}"][data-day="${day}"]`);
-  if (target) { target.focus(); return true; }
+  const target = document.querySelector(
+    `.cell-input[data-emp-id="${emp.id}"][data-day="${day}"]`,
+  );
+  if (target) {
+    target.focus();
+    return true;
+  }
   return false;
 }
 
@@ -414,7 +482,11 @@ function onCellKeydown(e) {
 function addEmployee(name) {
   const trimmed = name.trim();
   if (!trimmed) return;
-  const emp = { id: "e" + state.nextId++, name: trimmed, color: (state.employees.length) % PALETTE.length };
+  const emp = {
+    id: "e" + state.nextId++,
+    name: trimmed,
+    color: state.employees.length % PALETTE.length,
+  };
   state.employees.push(emp);
   save();
   renderAll();
@@ -436,19 +508,25 @@ function attachRowDnD(tr, handle) {
     dragIdx = +tr.dataset.idx;
     tr.classList.add("dragging");
     e.dataTransfer.effectAllowed = "move";
-    try { e.dataTransfer.setData("text/plain", String(dragIdx)); } catch (_) { }
+    try {
+      e.dataTransfer.setData("text/plain", String(dragIdx));
+    } catch (_) {}
     e.dataTransfer.setDragImage(tr, 20, 12);
   });
   handle.addEventListener("dragend", () => {
     tr.classList.remove("dragging");
-    document.querySelectorAll("#gridBody tr.drag-over").forEach((r) => r.classList.remove("drag-over"));
+    document
+      .querySelectorAll("#gridBody tr.drag-over")
+      .forEach((r) => r.classList.remove("drag-over"));
     dragIdx = null;
   });
   tr.addEventListener("dragover", (e) => {
     if (dragIdx === null) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    document.querySelectorAll("#gridBody tr.drag-over").forEach((r) => r.classList.remove("drag-over"));
+    document
+      .querySelectorAll("#gridBody tr.drag-over")
+      .forEach((r) => r.classList.remove("drag-over"));
     tr.classList.add("drag-over");
   });
   tr.addEventListener("drop", (e) => {
@@ -470,7 +548,11 @@ function attachRowDnD(tr, handle) {
    ============================================================ */
 
 function gridHours() {
-  return { start: state.gridStart, end: state.gridEnd, count: state.gridEnd - state.gridStart };
+  return {
+    start: state.gridStart,
+    end: state.gridEnd,
+    count: state.gridEnd - state.gridStart,
+  };
 }
 
 function renderSchedule() {
@@ -485,7 +567,8 @@ function renderSchedule() {
 
 function buildDayCard(d) {
   const { start, end, count } = gridHours();
-  const gMin = start * 60, gSpan = (end - start) * 60;
+  const gMin = start * 60,
+    gSpan = (end - start) * 60;
 
   const card = el("div", "day-card");
   card.dataset.day = String(d);
@@ -495,7 +578,8 @@ function buildDayCard(d) {
   head.appendChild(el("span", "day-title", DAY_NAMES[d]));
   const actions = el("div", "day-actions no-print");
   const zoom = el("button", "", focusedDay === d ? "⤡" : "⤢");
-  zoom.title = focusedDay === d ? "Retour à la semaine" : "Agrandir cette journée";
+  zoom.title =
+    focusedDay === d ? "Retour à la semaine" : "Agrandir cette journée";
   zoom.addEventListener("click", () => toggleFocus(d));
   actions.appendChild(zoom);
   const menu = el("button", "", "⋯");
@@ -512,7 +596,8 @@ function buildDayCard(d) {
   const axis = el("div", "tt-row tt-axis");
   axis.appendChild(el("div", "tt-name", ""));
   const axisTrack = el("div", "tt-track");
-  for (let h = start; h < end; h++) axisTrack.appendChild(el("div", "axis-cell", fmtHour(h)));
+  for (let h = start; h < end; h++)
+    axisTrack.appendChild(el("div", "axis-cell", fmtHour(h)));
   axis.appendChild(axisTrack);
   tt.appendChild(axis);
 
@@ -527,27 +612,59 @@ function buildDayCard(d) {
     name.appendChild(document.createTextNode(emp.name));
     row.appendChild(name);
 
-    const track = el("div", "tt-track");
+    const track = el("div", "tt-track editable");
     track.style.backgroundSize = bgSize;
+    track.dataset.empId = emp.id;
+    track.dataset.day = String(d);
+    track.addEventListener("pointerdown", onTrackPointerDown);
 
     const parsed = parseCell(cellsFor(emp.id)[d], gMin);
     if (parsed.off) {
       track.appendChild(el("div", "off-band", "OFF · REPOS"));
     } else {
-      for (const s of parsed.shifts) {
+      parsed.shifts.forEach((s, i) => {
         const a = Math.max(s.start, gMin);
         const b = Math.min(s.end, gMin + gSpan);
-        if (b <= a) continue; // entirely outside the visible grid
-        const block = el("div", "block", `${fmtTime(s.start)} – ${fmtTime(s.end)}`);
+        if (b <= a) return; // entirely outside the visible grid
+        const block = el(
+          "div",
+          "block",
+          `${fmtTime(s.start)} – ${fmtTime(s.end)}`,
+        );
         const c = empColor(emp);
         block.style.left = `${((a - gMin) / gSpan) * 100}%`;
         block.style.width = `${((b - a) / gSpan) * 100}%`;
         block.style.background = c.fill;
         block.style.color = c.text;
         block.style.border = `1.5px solid ${c.edge}`;
-        block.title = `${emp.name} : ${fmtTime(s.start)} – ${fmtTime(s.end)}`;
+        block.title = `${emp.name} : ${fmtTime(s.start)} – ${fmtTime(s.end)} (glisser pour déplacer, bords pour redimensionner, clic droit pour supprimer)`;
+        block.dataset.shiftIdx = String(i);
+        const hl = el("div", "bh l");
+        hl.dataset.zone = "start";
+        const hr = el("div", "bh r");
+        hr.dataset.zone = "end";
+        block.appendChild(hl);
+        block.appendChild(hr);
+        block.addEventListener("contextmenu", (ev) => {
+          ev.preventDefault();
+          openMenu(ev, [
+            { label: `${emp.name} · ${fmtTime(s.start)} – ${fmtTime(s.end)}` },
+            {
+              label: "Supprimer ce service",
+              danger: true,
+              action: () => {
+                const p = parseCell(cellsFor(emp.id)[d], gMin);
+                if (p.off || p.invalid) return;
+                const sh = p.shifts.map((x) => ({ ...x }));
+                sh.splice(i, 1);
+                commitShifts(emp.id, d, sh);
+              },
+            },
+          ]);
+        });
+        block.addEventListener("pointerdown", onBlockPointerDown);
         track.appendChild(block);
-      }
+      });
     }
     row.appendChild(track);
     tt.appendChild(row);
@@ -563,9 +680,11 @@ function buildDayCard(d) {
     const cell = el("div", "staff-cell", c === 0 ? "–" : String(c));
     if (c === 0) cell.classList.add("s0");
     else if (c === 1) cell.classList.add("s-low");
-    else if (c >= Math.max(2, Math.ceil(maxCount * 0.75))) cell.classList.add("s-high");
+    else if (c >= Math.max(2, Math.ceil(maxCount * 0.75)))
+      cell.classList.add("s-high");
     else cell.classList.add("s-mid");
-    cell.title = c === 0 ? "Personne de prévu" : `${c} employé${c > 1 ? "s" : ""}`;
+    cell.title =
+      c === 0 ? "Personne de prévu" : `${c} employé${c > 1 ? "s" : ""}`;
     strack.appendChild(cell);
   });
   staff.appendChild(strack);
@@ -579,9 +698,12 @@ function buildDayCard(d) {
 function staffingCounts(d) {
   const { start, end } = gridHours();
   const counts = [];
-  const parsedAll = state.employees.map((emp) => parseCell(cellsFor(emp.id)[d], start * 60));
+  const parsedAll = state.employees.map((emp) =>
+    parseCell(cellsFor(emp.id)[d], start * 60),
+  );
   for (let h = start; h < end; h++) {
-    const a = h * 60, b = a + 60;
+    const a = h * 60,
+      b = a + 60;
     let n = 0;
     for (const p of parsedAll) {
       if (p.shifts.some((s) => s.start < b && s.end > a)) n++;
@@ -592,16 +714,251 @@ function staffingCounts(d) {
 }
 
 /* ============================================================
+   DIRECT EDITING ON THE TIMETABLE
+   Drag a block's edge to resize, its middle to move (30-min
+   snapping), or click/drag on empty track space to add a shift.
+   Commits are written back to the cell text so the input grid,
+   summary and staffing stay in sync.
+   ============================================================ */
+
+const SNAP = 30; // snapping and minimum shift length, in minutes
+const MIN_LEN = 30;
+
+// serialize minutes for a cell: 450 → "7:30", 1020 → "17"
+function fmtCellTime(min) {
+  const h = Math.floor(min / 60),
+    m = min % 60;
+  return m ? `${h}:${String(m).padStart(2, "0")}` : `${h}`;
+}
+
+// overlapping or touching shifts become a single block
+function mergeShifts(shifts) {
+  const sorted = [...shifts].sort((a, b) => a.start - b.start);
+  const out = [];
+  for (const s of sorted) {
+    const last = out[out.length - 1];
+    if (last && s.start <= last.end) last.end = Math.max(last.end, s.end);
+    else out.push({ ...s });
+  }
+  return out;
+}
+
+function commitShifts(empId, d, shifts) {
+  const merged = mergeShifts(shifts);
+  cellsFor(empId)[d] = merged
+    .map((s) => `${fmtCellTime(s.start)}-${fmtCellTime(s.end)}`)
+    .join(" ");
+  save();
+  renderAll();
+}
+
+function trackGeom(track) {
+  const { start, end } = gridHours();
+  return {
+    gMin: start * 60,
+    gMax: end * 60,
+    rect: track.getBoundingClientRect(),
+  };
+}
+
+function pxToMin(clientX, g) {
+  const raw =
+    g.gMin + ((clientX - g.rect.left) / g.rect.width) * (g.gMax - g.gMin);
+  const snapped = Math.round(raw / SNAP) * SNAP;
+  return Math.max(g.gMin, Math.min(g.gMax, snapped));
+}
+
+function paintBlock(block, s, g) {
+  const span = g.gMax - g.gMin;
+  const a = Math.max(s.start, g.gMin),
+    b = Math.min(s.end, g.gMax);
+  block.style.left = `${((a - g.gMin) / span) * 100}%`;
+  block.style.width = `${((b - a) / span) * 100}%`;
+  if (block.firstChild && block.firstChild.nodeType === 3) {
+    block.firstChild.nodeValue = `${fmtTime(s.start)} – ${fmtTime(s.end)}`;
+  }
+}
+
+let drag = null;
+
+function capture(node, e, move, up) {
+  if (node.setPointerCapture) {
+    try {
+      node.setPointerCapture(e.pointerId);
+    } catch (_) {}
+  }
+  node.addEventListener("pointermove", move);
+  node.addEventListener("pointerup", up);
+  node.addEventListener("pointercancel", up);
+}
+
+function onBlockPointerDown(e) {
+  const block = e.currentTarget;
+  const track = block.parentElement;
+  const empId = track.dataset.empId,
+    d = +track.dataset.day;
+  const parsed = parseCell(cellsFor(empId)[d], state.gridStart * 60);
+  if (parsed.invalid || parsed.off) return;
+  const shifts = parsed.shifts.map((s) => ({ ...s }));
+  const idx = +block.dataset.shiftIdx;
+  if (!shifts[idx]) return;
+  const zone =
+    e.target.dataset && e.target.dataset.zone ? e.target.dataset.zone : "move";
+  drag = {
+    kind: zone,
+    empId,
+    d,
+    idx,
+    shifts,
+    block,
+    g: trackGeom(track),
+    startX: e.clientX,
+    orig: { ...shifts[idx] },
+  };
+  capture(block, e, onBlockPointerMove, onBlockPointerUp);
+  e.preventDefault();
+}
+
+function onBlockPointerMove(e) {
+  if (!drag || drag.kind === "create") return;
+  const s = drag.shifts[drag.idx],
+    g = drag.g;
+  // neighbours no longer clamp the drag: running into another block merges on release
+  if (drag.kind === "start") {
+    s.start = Math.min(
+      Math.max(pxToMin(e.clientX, g), g.gMin),
+      s.end - MIN_LEN,
+    );
+  } else if (drag.kind === "end") {
+    s.end = Math.max(
+      Math.min(pxToMin(e.clientX, g), g.gMax),
+      s.start + MIN_LEN,
+    );
+  } else {
+    // move: keep the duration, slide along the grid
+    const dur = drag.orig.end - drag.orig.start;
+    const deltaRaw =
+      ((e.clientX - drag.startX) / g.rect.width) * (g.gMax - g.gMin);
+    let ns = Math.round((drag.orig.start + deltaRaw) / SNAP) * SNAP;
+    ns = Math.max(g.gMin, Math.min(ns, g.gMax - dur));
+    s.start = ns;
+    s.end = ns + dur;
+    // dragging the block vertically out of its row deletes it
+    drag.deleting =
+      e.clientY < g.rect.top - 45 || e.clientY > g.rect.bottom + 45;
+    drag.block.classList.toggle("deleting", drag.deleting);
+  }
+  paintBlock(drag.block, s, g);
+}
+
+function onBlockPointerUp() {
+  if (!drag || drag.kind === "create") return;
+  const dr = drag;
+  drag = null;
+  if (dr.deleting) {
+    dr.shifts.splice(dr.idx, 1);
+    commitShifts(dr.empId, dr.d, dr.shifts);
+    return;
+  }
+  const s = dr.shifts[dr.idx];
+  if (s.start !== dr.orig.start || s.end !== dr.orig.end)
+    commitShifts(dr.empId, dr.d, dr.shifts);
+  else renderSchedule(); // plain click: rebuild to drop the listeners cleanly
+}
+
+function onTrackPointerDown(e) {
+  if (e.target !== e.currentTarget) return; // block interactions are handled above
+  const track = e.currentTarget;
+  const empId = track.dataset.empId,
+    d = +track.dataset.day;
+  const parsed = parseCell(cellsFor(empId)[d], state.gridStart * 60);
+  if (parsed.invalid || parsed.off) return;
+  const shifts = parsed.shifts.map((s) => ({ ...s }));
+  const g = trackGeom(track);
+  const anchor = pxToMin(e.clientX, g);
+
+  // what a plain click would create: 1 hour from the click (backwards near the grid end);
+  // overlapping an existing block simply merges with it on release
+  const db = Math.min(anchor + 60, g.gMax);
+  const da = Math.max(g.gMin, Math.min(anchor, db - 60));
+
+  const emp = state.employees.find((x) => x.id === empId);
+  const c = empColor(emp);
+  const ghost = el("div", "block ghost");
+  ghost.appendChild(document.createTextNode(""));
+  ghost.style.background = c.fill;
+  ghost.style.color = c.text;
+  ghost.style.border = `1.5px dashed ${c.edge}`;
+  track.appendChild(ghost);
+
+  drag = {
+    kind: "create",
+    empId,
+    d,
+    shifts,
+    g,
+    block: ghost,
+    anchor,
+    cur: anchor,
+    da,
+    db,
+  };
+  paintBlock(ghost, { start: da, end: db }, g);
+  capture(track, e, onCreateMove, onCreateUp);
+  e.preventDefault();
+}
+
+function onCreateMove(e) {
+  if (!drag || drag.kind !== "create") return;
+  drag.cur = pxToMin(e.clientX, drag.g);
+  if (Math.abs(drag.cur - drag.anchor) < SNAP) {
+    paintBlock(drag.block, { start: drag.da, end: drag.db }, drag.g);
+  } else {
+    const a = Math.min(drag.anchor, drag.cur),
+      b = Math.max(drag.anchor, drag.cur);
+    paintBlock(drag.block, { start: a, end: b }, drag.g);
+  }
+}
+
+function onCreateUp() {
+  if (!drag || drag.kind !== "create") return;
+  const dr = drag;
+  drag = null;
+  dr.block.remove();
+  let a, b;
+  if (Math.abs(dr.cur - dr.anchor) < SNAP) {
+    a = dr.da;
+    b = dr.db;
+  } // plain click → 1 hour
+  else {
+    a = Math.min(dr.anchor, dr.cur);
+    b = Math.max(dr.anchor, dr.cur);
+  }
+  if (b - a >= MIN_LEN) {
+    dr.shifts.push({ start: a, end: b });
+    commitShifts(dr.empId, dr.d, dr.shifts);
+  } else {
+    renderSchedule();
+  }
+}
+
+/* ============================================================
    SUMMARY
    ============================================================ */
 
 function employeeStats(empId) {
   const gMin = state.gridStart * 60;
-  let minutes = 0, days = 0, offs = 0, shifts = 0;
+  let minutes = 0,
+    days = 0,
+    offs = 0,
+    shifts = 0;
   const cells = cellsFor(empId);
   for (let d = 0; d < 7; d++) {
     const p = parseCell(cells[d], gMin);
-    if (p.off) { offs++; continue; }
+    if (p.off) {
+      offs++;
+      continue;
+    }
     if (p.shifts.length) {
       days++;
       shifts += p.shifts.length;
@@ -614,7 +971,8 @@ function employeeStats(empId) {
 function renderSummary() {
   const body = $("#summaryBody");
   body.innerHTML = "";
-  let totalMin = 0, totalShifts = 0;
+  let totalMin = 0,
+    totalShifts = 0;
 
   for (const emp of state.employees) {
     const st = employeeStats(emp.id);
@@ -645,7 +1003,6 @@ function renderSummary() {
   };
   chip(" employés", state.employees.length);
   chip(" planifiées", fmtHours(totalMin));
-
 }
 
 /* ============================================================
@@ -657,16 +1014,26 @@ const popMenu = document.getElementById("popMenu");
 function openMenu(anchorEvent, items) {
   popMenu.innerHTML = "";
   for (const it of items) {
-    if (it === "sep") { popMenu.appendChild(el("div", "menu-sep")); continue; }
-    if (it.label !== undefined && !it.action) { popMenu.appendChild(el("div", "menu-label", it.label)); continue; }
+    if (it === "sep") {
+      popMenu.appendChild(el("div", "menu-sep"));
+      continue;
+    }
+    if (it.label !== undefined && !it.action) {
+      popMenu.appendChild(el("div", "menu-label", it.label));
+      continue;
+    }
     const btn = el("button", it.danger ? "danger" : "", it.label);
     btn.type = "button";
-    btn.addEventListener("click", () => { closeMenu(); it.action(); });
+    btn.addEventListener("click", () => {
+      closeMenu();
+      it.action();
+    });
     popMenu.appendChild(btn);
   }
   popMenu.hidden = false;
   const r = anchorEvent.currentTarget.getBoundingClientRect();
-  const mw = popMenu.offsetWidth, mh = popMenu.offsetHeight;
+  const mw = popMenu.offsetWidth,
+    mh = popMenu.offsetHeight;
   let x = Math.min(r.left, window.innerWidth - mw - 8);
   let y = r.bottom + 4;
   if (y + mh > window.innerHeight - 8) y = Math.max(8, r.top - mh - 4);
@@ -675,8 +1042,12 @@ function openMenu(anchorEvent, items) {
   anchorEvent.stopPropagation();
 }
 
-function closeMenu() { popMenu.hidden = true; }
-document.addEventListener("click", (e) => { if (!popMenu.contains(e.target)) closeMenu(); });
+function closeMenu() {
+  popMenu.hidden = true;
+}
+document.addEventListener("click", (e) => {
+  if (!popMenu.contains(e.target)) closeMenu();
+});
 window.addEventListener("scroll", closeMenu, true);
 
 function openDayMenu(e, d) {
@@ -686,20 +1057,52 @@ function openDayMenu(e, d) {
     items.push({ label: `→ ${DAY_NAMES[t]}`, action: () => copyDay(d, t) });
   }
   items.push("sep");
-  items.push({ label: "⬇ Télécharger le jour en image", action: () => downloadImage([d]) });
-  items.push({ label: "Vider la journée", danger: true, action: () => clearDay(d) });
+  items.push({
+    label: "⬇ Télécharger le jour en image",
+    action: () => downloadImage([d]),
+  });
+  items.push({
+    label: "Vider la journée",
+    danger: true,
+    action: () => clearDay(d),
+  });
   openMenu(e, items);
 }
 
 function openRowMenu(e, empId) {
   const emp = state.employees.find((x) => x.id === empId);
   const items = [
-    { label: "Copier le planning", action: () => { copiedRow = cellsFor(empId).slice(); } },
+    {
+      label: "Copier le planning",
+      action: () => {
+        copiedRow = cellsFor(empId).slice();
+      },
+    },
   ];
-  if (copiedRow) items.push({ label: "Coller le planning ici", action: () => { state.cells[empId] = copiedRow.slice(); save(); renderAll(); } });
+  if (copiedRow)
+    items.push({
+      label: "Coller le planning ici",
+      action: () => {
+        state.cells[empId] = copiedRow.slice();
+        save();
+        renderAll();
+      },
+    });
   items.push("sep");
-  items.push({ label: `Vider la semaine de ${emp ? emp.name : "l'employé"}`, danger: true, action: () => { state.cells[empId] = ["", "", "", "", "", "", ""]; save(); renderAll(); } });
-  items.push({ label: "Supprimer l'employé", danger: true, action: () => removeEmployee(empId) });
+  items.push({
+    label: `Vider la semaine de ${emp ? emp.name : "l'employé"}`,
+    danger: true,
+    action: () => {
+      state.cells[empId] = ["", "", "", "", "", "", ""];
+      save();
+      renderAll();
+    },
+  });
+  items.push({
+    label: "Supprimer l'employé",
+    danger: true,
+    action: () => removeEmployee(empId),
+  });
   openMenu(e, items);
 }
 
@@ -723,21 +1126,32 @@ function clearDay(d) {
    ============================================================ */
 
 function initRangeSelects() {
-  const s = $("#gridStart"), e = $("#gridEnd");
-  s.innerHTML = ""; e.innerHTML = "";
+  const s = $("#gridStart"),
+    e = $("#gridEnd");
+  s.innerHTML = "";
+  e.innerHTML = "";
   for (let h = 0; h <= 23; h++) s.appendChild(new Option(fmtHour(h), h));
-  for (let h = 1; h <= 24; h++) e.appendChild(new Option(h === 24 ? "24h" : fmtHour(h), h));
+  for (let h = 1; h <= 24; h++)
+    e.appendChild(new Option(h === 24 ? "24h" : fmtHour(h), h));
   s.value = state.gridStart;
   e.value = state.gridEnd;
   s.addEventListener("change", () => {
     state.gridStart = +s.value;
-    if (state.gridEnd <= state.gridStart) { state.gridEnd = Math.min(24, state.gridStart + 1); e.value = state.gridEnd; }
-    save(); renderAll();
+    if (state.gridEnd <= state.gridStart) {
+      state.gridEnd = Math.min(24, state.gridStart + 1);
+      e.value = state.gridEnd;
+    }
+    save();
+    renderAll();
   });
   e.addEventListener("change", () => {
     state.gridEnd = +e.value;
-    if (state.gridEnd <= state.gridStart) { state.gridStart = Math.max(0, state.gridEnd - 1); s.value = state.gridStart; }
-    save(); renderAll();
+    if (state.gridEnd <= state.gridStart) {
+      state.gridStart = Math.max(0, state.gridEnd - 1);
+      s.value = state.gridStart;
+    }
+    save();
+    renderAll();
   });
 }
 
@@ -753,7 +1167,10 @@ function toggleFocus(d) {
 }
 function applyFocusVisibility() {
   document.querySelectorAll(".day-card").forEach((card) => {
-    card.classList.toggle("focused", focusedDay !== null && +card.dataset.day === focusedDay);
+    card.classList.toggle(
+      "focused",
+      focusedDay !== null && +card.dataset.day === focusedDay,
+    );
   });
 }
 
@@ -773,7 +1190,11 @@ function renderDayNav() {
   nav.innerHTML = "";
   for (let d = 0; d < 7; d++) {
     const b = el("button", d === uiDay ? "active" : "", DAY_SHORT[d]);
-    b.addEventListener("click", () => { uiDay = d; renderDayNav(); applyMobileVisibility(); });
+    b.addEventListener("click", () => {
+      uiDay = d;
+      renderDayNav();
+      applyMobileVisibility();
+    });
     nav.appendChild(b);
   }
 }
@@ -807,12 +1228,19 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 function dayBlockHeight() {
-  return EX.dayTitleH + EX.axisH + state.employees.length * EX.rowH + EX.staffH + EX.dayPad * 2;
+  return (
+    EX.dayTitleH +
+    EX.axisH +
+    state.employees.length * EX.rowH +
+    EX.staffH +
+    EX.dayPad * 2
+  );
 }
 
 function drawDay(ctx, d, x, y, width) {
   const { start, end } = gridHours();
-  const gMin = start * 60, gSpan = (end - start) * 60;
+  const gMin = start * 60,
+    gSpan = (end - start) * 60;
   const trackX = x + EX.dayPad + EX.nameW;
   const trackW = width - EX.dayPad * 2 - EX.nameW;
   const hourW = trackW / (end - start);
@@ -894,7 +1322,11 @@ function drawDay(ctx, d, x, y, width) {
       ctx.fillStyle = "#94a3b8";
       ctx.font = "700 11px Segoe UI, Arial";
       ctx.textAlign = "center";
-      ctx.fillText("O F F   ·   R E P O S", trackX + trackW / 2, ry + EX.rowH / 2);
+      ctx.fillText(
+        "O F F   ·   R E P O S",
+        trackX + trackW / 2,
+        ry + EX.rowH / 2,
+      );
     } else {
       for (const s of parsed.shifts) {
         const a = Math.max(s.start, gMin);
@@ -930,13 +1362,29 @@ function drawDay(ctx, d, x, y, width) {
   counts.forEach((n, i) => {
     const cx = trackX + i * hourW;
     if (n > 0) {
-      ctx.fillStyle = n === 1 ? "#fff7ed" : (n >= Math.max(2, Math.ceil(maxCount * 0.75)) ? "#ecfdf5" : "#eef2ff");
+      ctx.fillStyle =
+        n === 1
+          ? "#fff7ed"
+          : n >= Math.max(2, Math.ceil(maxCount * 0.75))
+            ? "#ecfdf5"
+            : "#eef2ff";
       ctx.fillRect(cx + 1, staffY + 2, hourW - 2, EX.staffH - 4);
     }
-    ctx.fillStyle = n === 0 ? "#cbd5e1" : (n === 1 ? "#c2410c" : (n >= Math.max(2, Math.ceil(maxCount * 0.75)) ? "#047857" : "#4338ca"));
+    ctx.fillStyle =
+      n === 0
+        ? "#cbd5e1"
+        : n === 1
+          ? "#c2410c"
+          : n >= Math.max(2, Math.ceil(maxCount * 0.75))
+            ? "#047857"
+            : "#4338ca";
     ctx.font = "700 11px Segoe UI, Arial";
     ctx.textAlign = "center";
-    ctx.fillText(n === 0 ? "–" : String(n), cx + hourW / 2, staffY + EX.staffH / 2);
+    ctx.fillText(
+      n === 0 ? "–" : String(n),
+      cx + hourW / 2,
+      staffY + EX.staffH / 2,
+    );
   });
 
   return totalH;
@@ -945,7 +1393,8 @@ function drawDay(ctx, d, x, y, width) {
 // "Boutique Centre-Ville" → "boutique-centre-ville" (for file names)
 function slugify(s) {
   return (s || "")
-    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
@@ -955,8 +1404,11 @@ function downloadImage(dayIndices) {
   const days = dayIndices || [0, 1, 2, 3, 4, 5, 6];
   const headerH = 92;
   const W = EX.width;
-  const totalH = EX.margin * 2 + headerH +
-    days.length * dayBlockHeight() + (days.length - 1) * EX.dayGap;
+  const totalH =
+    EX.margin * 2 +
+    headerH +
+    days.length * dayBlockHeight() +
+    (days.length - 1) * EX.dayGap;
 
   const canvas = document.createElement("canvas");
   canvas.width = W * EX.scale;
@@ -980,7 +1432,10 @@ function downloadImage(dayIndices) {
   }
   ctx.fillStyle = "#4f46e5";
   ctx.font = "700 15px Segoe UI, Arial";
-  const title = days.length === 1 ? `PLANNING DU ${DAY_NAMES[days[0]].toUpperCase()}` : "PLANNING HEBDOMADAIRE DES EMPLOYÉS";
+  const title =
+    days.length === 1
+      ? `PLANNING DU ${DAY_NAMES[days[0]].toUpperCase()}`
+      : "PLANNING HEBDOMADAIRE DES EMPLOYÉS";
   ctx.fillText(title.split("").join(" "), W / 2, hy + (storeName ? 60 : 30));
 
   // day blocks
@@ -992,9 +1447,10 @@ function downloadImage(dayIndices) {
 
   const storeSlug = slugify(state.business);
   const base = storeSlug ? `planning-${storeSlug}` : "planning";
-  const fname = days.length === 1
-    ? `${base}-${DAY_NAMES[days[0]].toLowerCase()}.png`
-    : `${base}-semaine.png`;
+  const fname =
+    days.length === 1
+      ? `${base}-${DAY_NAMES[days[0]].toLowerCase()}.png`
+      : `${base}-semaine.png`;
 
   canvas.toBlob((blob) => {
     const a = document.createElement("a");
@@ -1002,7 +1458,10 @@ function downloadImage(dayIndices) {
     a.download = fname;
     document.body.appendChild(a);
     a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    setTimeout(() => {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 500);
   }, "image/png");
 }
 

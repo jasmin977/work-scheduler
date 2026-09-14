@@ -13,7 +13,7 @@
   --accent-soft: #eef2ff;
   --danger: #e11d48;
   --radius: 12px;
-  --shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 4px 14px rgba(15, 23, 42, .05);
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 14px rgba(15, 23, 42, 0.05);
 }
 
 * {
@@ -27,7 +27,13 @@ html {
 }
 
 body {
-  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-family:
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
   background: var(--bg);
   color: var(--ink);
   font-size: 14px;
@@ -100,7 +106,9 @@ code {
   font-weight: 600;
   width: 250px;
   background: transparent;
-  transition: border-color .15s, background .15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .business-input:hover {
@@ -123,7 +131,7 @@ code {
 .store-ctl label {
   font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
 }
 
 .store-ctl select {
@@ -157,7 +165,7 @@ code {
 }
 
 .icon-btn:disabled {
-  opacity: .35;
+  opacity: 0.35;
   cursor: default;
 }
 
@@ -176,7 +184,7 @@ code {
 .range-ctl label {
   font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
 }
 
 .range-ctl select {
@@ -199,7 +207,7 @@ code {
   border-radius: 9px;
   padding: 8px 16px;
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(79, 70, 229, .4);
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.4);
 }
 
 .primary-btn:hover {
@@ -254,7 +262,7 @@ code {
 
 .section-head h2 {
   font-size: 15px;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
 }
 
 .hint {
@@ -276,7 +284,7 @@ code {
 .input-grid th {
   font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: 0.05em;
   color: var(--ink-soft);
   font-weight: 600;
   padding: 6px 4px;
@@ -338,7 +346,7 @@ code {
 }
 
 tr.dragging {
-  opacity: .4;
+  opacity: 0.4;
 }
 
 tr.drag-over td {
@@ -363,7 +371,9 @@ tr.drag-over td {
   padding: 3px 5px;
   background: transparent;
   text-overflow: ellipsis;
-  transition: border-color .12s, background .12s;
+  transition:
+    border-color 0.12s,
+    background 0.12s;
 }
 
 .emp-name-input:hover {
@@ -412,7 +422,9 @@ tr.drag-over td {
   background: transparent;
   font-size: 13.5px;
   font-variant-numeric: tabular-nums;
-  transition: border-color .12s, background .12s;
+  transition:
+    border-color 0.12s,
+    background 0.12s;
 }
 
 .cell-input:hover {
@@ -434,7 +446,7 @@ tr.drag-over td {
 .cell-input.is-off {
   color: var(--ink-soft);
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: 0.05em;
   font-size: 12px;
 }
 
@@ -465,7 +477,7 @@ tr.drag-over td {
 
 .schedule-header h1 {
   font-size: 22px;
-  letter-spacing: .01em;
+  letter-spacing: 0.01em;
 }
 
 .schedule-header h1:empty {
@@ -475,7 +487,7 @@ tr.drag-over td {
 .schedule-title {
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: .22em;
+  letter-spacing: 0.22em;
   color: var(--accent);
   margin-top: 2px;
 }
@@ -505,7 +517,7 @@ tr.drag-over td {
 .day-title {
   font-size: 15px;
   font-weight: 700;
-  letter-spacing: .06em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -615,7 +627,70 @@ tr.drag-over td {
   overflow: hidden;
   white-space: nowrap;
   padding: 0 4px;
-  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.55);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.block:active {
+  cursor: grabbing;
+}
+
+/* editable empty space: click or drag to add a shift */
+.tt-track.editable {
+  cursor: copy;
+}
+
+/* resize handles on block edges */
+.bh {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 9px;
+  cursor: ew-resize;
+}
+
+.bh.l {
+  left: 0;
+}
+.bh.r {
+  right: 0;
+}
+
+.bh::after {
+  content: "";
+  position: absolute;
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+  left: 3px;
+  border-radius: 2px;
+  background: rgba(15, 23, 42, 0.28);
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.bh.r::after {
+  left: auto;
+  right: 3px;
+}
+
+.block:hover .bh::after {
+  opacity: 1;
+}
+
+/* preview while creating a shift by click/drag */
+.block.ghost {
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* dragged out of its row: release to delete */
+.block.deleting {
+  opacity: 0.35;
+  border-style: dashed !important;
+  filter: grayscale(0.6);
 }
 
 /* off row */
@@ -628,9 +703,13 @@ tr.drag-over td {
   justify-content: center;
   font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: .18em;
+  letter-spacing: 0.18em;
   color: #94a3b8;
-  background: repeating-linear-gradient(-45deg, #f8fafc 0 8px, #f1f5f9 8px 16px);
+  background: repeating-linear-gradient(
+    -45deg,
+    #f8fafc 0 8px,
+    #f1f5f9 8px 16px
+  );
   border: 1px dashed var(--line-strong);
 }
 
@@ -651,7 +730,7 @@ tr.drag-over td {
   font-weight: 600;
   color: var(--ink-soft);
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: 0.06em;
   border-right-color: transparent;
 }
 
@@ -732,7 +811,7 @@ tr.drag-over td {
   text-align: left;
   font-size: 11.5px;
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: 0.05em;
   color: var(--ink-soft);
   padding: 6px 8px;
   border-bottom: 2px solid var(--line);
@@ -760,7 +839,7 @@ tr.drag-over td {
   background: #fff;
   border: 1px solid var(--line-strong);
   border-radius: 10px;
-  box-shadow: 0 8px 30px rgba(15, 23, 42, .16);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.16);
   padding: 5px;
   min-width: 190px;
 }
@@ -795,7 +874,7 @@ tr.drag-over td {
 .pop-menu .menu-label {
   font-size: 10.5px;
   text-transform: uppercase;
-  letter-spacing: .07em;
+  letter-spacing: 0.07em;
   color: var(--ink-soft);
   padding: 6px 10px 2px;
 }
